@@ -1,0 +1,46 @@
+{
+  "name": "dimdim",
+  "version": "1.0.0",
+  "description": "Aplicação de Gestão Financeira Pessoal",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "keywords": [
+    "finanças",
+    "gestão",
+    "pessoal",
+    "next.js"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@hookform/resolvers": "^5.1.1",
+    "@mui/icons-material": "^6.4.12",
+    "@mui/material": "^6.4.12",
+    "@supabase/supabase-js": "^2.50.0",
+    "@types/node": "^24.0.3",
+    "@types/papaparse": "^5.3.16",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "autoprefixer": "^10.4.21",
+    "dayjs": "^1.11.13",
+    "eslint": "^9.29.0",
+    "eslint-config-next": "^15.3.4",
+    "next": "^15.3.2",
+    "papaparse": "^5.5.3",
+    "postcss": "^8.5.6",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-dropzone": "^14.3.8",
+    "react-hook-form": "^7.58.1",
+    "recharts": "^2.15.4",
+    "typescript": "^5.8.3",
+    "zod": "^3.25.67"
+  }
+}
