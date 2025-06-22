@@ -224,8 +224,52 @@ useEffect(() => {
 3. **Filtros Predefinidos**: Criar presets como "Este mês", "Despesas altas"
 4. **Exportação Filtrada**: Permitir exportar apenas transações filtradas
 
+## 🐛 Correções de Bugs Críticos
+
+### Bug 1: Cálculo Incorreto do Final do Mês
+**Problema**: Campo de data não permitia seleção de dias válidos
+
+**Causa**: Erro no cálculo do `endOfMonth` usando `selectedMonth - 1`
+
+**Solução**: Corrigido para `new Date(selectedYear, selectedMonth, 0).getDate()`
+
+### Bug 2: Loop Infinito no useEffect (CRÍTICO)
+**Problema**: Filtro aplicado e imediatamente limpo (61→6→61 transações)
+
+**Causa**: `filters.date` nas dependências do useEffect criava loop:
+```typescript
+// ❌ PROBLEMA - Loop infinito
+useEffect(() => {
+  if (filters.date) {
+    // limpa filtro
+  }
+}, [selectedMonth, selectedYear, filters.date]) // ← filters.date causa loop
+
+// ✅ SOLUÇÃO - Apenas mudanças de período
+useEffect(() => {
+  if (filters.date) {
+    // limpa filtro
+  }
+}, [selectedMonth, selectedYear]) // ← sem filters.date
+```
+
+**Sequência do Bug**:
+1. Usuário seleciona data → `filters.date` muda
+2. useEffect detecta mudança → limpa filtro
+3. Loop infinito de limpeza
+
+**Correção**: Removidas dependências desnecessárias (`filters.date`, `applyFilters`, `onFiltersDataChange`)
+
+### Logs de Confirmação
+```
+Data selecionada: 2025-06-16
+Filtro de data: 61 → 6 transações  ← FUNCIONOU!
+Campo data onBlur - valor atual: 2025-06-16  ← MANTEVE O VALOR!
+```
+
 ---
 
-**Status:** ✅ **Implementação Concluída com Sucesso**  
+**Status:** ✅ **Implementação Concluída com Sucesso e Bugs Corrigidos**  
 **Data:** Janeiro 2025  
-**Build:** ✅ Passou sem erros 
+**Build:** ✅ Passou sem erros  
+**Filtros:** ✅ Funcionando perfeitamente após correção do loop infinito 

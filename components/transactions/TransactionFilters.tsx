@@ -58,19 +58,11 @@ export default function TransactionFilters({
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [filters, setFilters] = useState<TransactionFiltersData>({})
 
-  // Debug: monitorar mudanças no estado filters
-  useEffect(() => {
-    console.log('Estado filters mudou:', filters)
-  }, [filters])
-
   // Calcular limites de data para o mês/ano selecionado
   const startOfMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}-01`
   // selectedMonth é 1-indexed, então para pegar o último dia do mês atual, usamos selectedMonth (sem -1) 
   // e day 0 que retorna o último dia do mês anterior (que é o mês atual)
   const endOfMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}-${new Date(selectedYear, selectedMonth, 0).getDate().toString().padStart(2, '0')}`
-  
-  // Debug das datas calculadas
-  console.log('Filtro de data - Período:', { selectedMonth, selectedYear, startOfMonth, endOfMonth })
 
   // Extrair categorias únicas das transações
   const uniqueCategories = transactions.reduce((acc, transaction) => {
@@ -91,20 +83,10 @@ export default function TransactionFilters({
 
   const applyFilters = useCallback((newFilters: TransactionFiltersData) => {
     let filtered = [...transactions]
-    
-    console.log('ApplyFilters chamado com:', newFilters)
-    console.log('Transações disponíveis:', transactions.length)
 
     // Filtro por data específica
     if (newFilters.date) {
-      console.log('Filtrando por data:', newFilters.date)
-      console.log('Primeiras 3 transações (datas):', transactions.slice(0, 3).map(t => ({ date: t.date, description: t.description })))
-      
-      const beforeFilter = filtered.length
       filtered = filtered.filter(t => t.date === newFilters.date!)
-      const afterFilter = filtered.length
-      
-      console.log(`Filtro de data: ${beforeFilter} → ${afterFilter} transações`)
     }
 
     // Filtro por descrição
@@ -137,15 +119,12 @@ export default function TransactionFilters({
       filtered = filtered.filter(t => t.amount <= newFilters.valueTo!)
     }
 
-    console.log('Resultado final do filtro:', filtered.length, 'transações')
     onFiltersChange(filtered)
   }, [transactions, onFiltersChange])
 
   // Limpar filtro de data quando mês/ano muda
   useEffect(() => {
-    console.log('useEffect limpeza - mudança de período:', { selectedMonth, selectedYear, hasDateFilter: !!filters.date })
     if (filters.date) {
-      console.log('Limpando filtro de data devido a mudança de período')
       const newFilters = { ...filters }
       delete newFilters.date
       setFilters(newFilters)
@@ -158,9 +137,7 @@ export default function TransactionFilters({
   }, [selectedMonth, selectedYear])
 
   const handleFilterChange = (key: keyof TransactionFiltersData, value: any) => {
-    console.log('handleFilterChange chamado:', { key, value, currentFilters: filters })
     const newFilters = { ...filters, [key]: value }
-    console.log('Novos filtros:', newFilters)
     setFilters(newFilters)
     applyFilters(newFilters)
     
@@ -309,11 +286,7 @@ export default function TransactionFilters({
                   fullWidth
                   size="small"
                   value={filters.date || ''}
-                  onChange={(e) => {
-                    console.log('Data selecionada:', e.target.value)
-                    handleFilterChange('date', e.target.value)
-                  }}
-                  onBlur={() => console.log('Campo data onBlur - valor atual:', filters.date)}
+                  onChange={(e) => handleFilterChange('date', e.target.value)}
                   inputProps={{ 
                     min: startOfMonth, 
                     max: endOfMonth,
