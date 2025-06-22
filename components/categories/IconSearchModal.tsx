@@ -19,8 +19,6 @@ import {
   InputAdornment,
   Tabs,
   Tab,
-  CircularProgress,
-  Alert,
 } from '@mui/material'
 import {
   Close,
@@ -35,14 +33,12 @@ interface IconSearchModalProps {
   open: boolean
   onClose: () => void
   onSelectIcon: (iconName: string) => void
-  currentIcon?: string
 }
 
 export default function IconSearchModal({
   open,
   onClose,
   onSelectIcon,
-  currentIcon,
 }: IconSearchModalProps) {
   const {
     searchQuery,
@@ -54,7 +50,6 @@ export default function IconSearchModal({
     setSearchQuery,
     setSelectedCategory,
     selectIcon,
-    clearSelection,
     clearSearch,
   } = useIconSearch()
 

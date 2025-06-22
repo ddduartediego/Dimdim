@@ -240,9 +240,9 @@ export default function CategoryForm({
                 </Button>
               </Box>
               
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                Ícones populares (ou clique em "Buscar Ícones" para ver mais opções):
-              </Typography>
+                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                 Ícones populares (ou clique em &quot;Buscar Ícones&quot; para ver mais opções):
+               </Typography>
               
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', maxHeight: 200, overflow: 'auto' }}>
                 {POPULAR_ICONS.map((iconName) => (
@@ -294,7 +294,6 @@ export default function CategoryForm({
         open={iconSearchOpen}
         onClose={() => setIconSearchOpen(false)}
         onSelectIcon={handleIconSelect}
-        currentIcon={watchedIcon}
       />
     </Dialog>
   )
