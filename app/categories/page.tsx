@@ -135,8 +135,8 @@ export default function CategoriesPage() {
 
   const handleDeleteCategory = async (category: Category) => {
     if (category.is_default) {
-      setError('Categorias padrão não podem ser excluídas')
-      setTimeout(() => setError(''), 3000)
+      setError('Categorias padrão não podem ser excluídas. Para gerenciá-las, acesse as Configurações do Sistema.')
+      setTimeout(() => setError(''), 5000)
       return
     }
 

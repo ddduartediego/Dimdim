@@ -105,6 +105,17 @@ export const useNavigation = () => {
           icon: 'upload_file'
         }
       ]
+    },
+    {
+      title: 'Sistema',
+      icon: 'admin_panel_settings',
+      items: [
+        {
+          path: '/settings',
+          label: 'Configurações',
+          icon: 'settings'
+        }
+      ]
     }
   ]
 

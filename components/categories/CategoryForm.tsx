@@ -21,7 +21,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material'
-import { Close, Search } from '@mui/icons-material'
+import { Close, Search, AdminPanelSettings } from '@mui/icons-material'
 import { Category } from '@/types/database'
 import IconSearchModal from './IconSearchModal'
 import { getPopularIcons } from '@/lib/materialIcons'
@@ -107,6 +107,10 @@ export default function CategoryForm({
     }
   }
 
+  // Impedir edição se for categoria padrão
+  const isDefaultCategory = category?.is_default === true
+  const isDisabled = loading || isSubmitting || isDefaultCategory
+
   const handleIconSelect = (iconName: string) => {
     setValue('icon', iconName)
     setIconSearchOpen(false)
@@ -116,9 +120,21 @@ export default function CategoryForm({
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">
-            {category ? 'Editar Categoria' : 'Nova Categoria'}
-          </Typography>
+          <Box display="flex" alignItems="center" gap={2}>
+            {isDefaultCategory && (
+              <AdminPanelSettings color="primary" fontSize="small" />
+            )}
+            <Box>
+              <Typography variant="h6">
+                {category ? 'Editar Categoria' : 'Nova Categoria'}
+              </Typography>
+              {isDefaultCategory && (
+                <Typography variant="caption" color="text.secondary">
+                  Categoria padrão do sistema
+                </Typography>
+              )}
+            </Box>
+          </Box>
           <IconButton onClick={handleClose} size="small">
             <Close />
           </IconButton>
@@ -136,6 +152,15 @@ export default function CategoryForm({
           {success && (
             <Alert severity="success" sx={{ mb: 2 }}>
               {success}
+            </Alert>
+          )}
+
+          {isDefaultCategory && (
+            <Alert severity="info" sx={{ mb: 3 }} icon={<AdminPanelSettings />}>
+              <Typography variant="body2">
+                <strong>Categoria Padrão:</strong> Esta categoria é global do sistema e não pode ser editada.
+                Para modificá-la, acesse as Configurações do Sistema.
+              </Typography>
             </Alert>
           )}
 

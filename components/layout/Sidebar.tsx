@@ -26,7 +26,6 @@ import {
   ExpandMore,
   Logout,
   Person,
-  Settings,
 } from '@mui/icons-material'
 import { transitions, fadeInUp, pulse, bounceIn, staggerDelay } from './animations'
 
@@ -303,28 +302,7 @@ export default function Sidebar({ open, onClose, isMobile }: SidebarProps) {
             </ListItemButton>
           </ListItem>
 
-          {/* Configurações (placeholder) */}
-          <ListItem disablePadding sx={{ mb: 1 }}>
-            <ListItemButton
-              disabled
-              sx={{
-                borderRadius: 2,
-                py: 1,
-                opacity: 0.5
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 36 }}>
-                <Settings sx={{ fontSize: 18, color: 'text.secondary' }} />
-              </ListItemIcon>
-              <ListItemText 
-                primary="Configurações"
-                primaryTypographyProps={{
-                  variant: 'body2',
-                  color: 'text.secondary'
-                }}
-              />
-            </ListItemButton>
-          </ListItem>
+
 
           {/* Logout */}
           <ListItem disablePadding>
