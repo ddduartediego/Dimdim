@@ -63,14 +63,9 @@ export const useNavigation = () => {
       icon: 'account_balance',
       items: [
         {
-          path: '/dashboard',
-          label: 'Dashboard',
-          icon: 'dashboard'
-        },
-        {
-          path: '/transactions',
-          label: 'Transações',
-          icon: 'receipt_long',
+          path: '/main',
+          label: 'Início',
+          icon: 'home',
           badge: badges.transactions > 0 ? badges.transactions : undefined
         },
         {

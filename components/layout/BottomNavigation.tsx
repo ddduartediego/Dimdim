@@ -14,14 +14,14 @@ import {
 
 const mainNavigationItems = [
   {
-    path: '/dashboard',
-    label: 'Dashboard',
-    icon: 'dashboard'
+    path: '/main',
+    label: 'Início',
+    icon: 'home'
   },
   {
-    path: '/transactions',
-    label: 'Transações',
-    icon: 'receipt_long'
+    path: '/categories',
+    label: 'Categorias',
+    icon: 'category'
   },
   {
     path: '/reports',

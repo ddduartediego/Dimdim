@@ -99,7 +99,7 @@ export default function AppHeader({ onMenuToggle, sidebarOpen, isMobile }: AppHe
               >
                 <Link
                   color="inherit"
-                  href="/dashboard"
+                  href="/main"
                   sx={{
                     display: 'flex',
                     alignItems: 'center',

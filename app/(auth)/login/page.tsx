@@ -35,7 +35,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user && !authLoading) {
-      router.push('/dashboard')
+      router.push('/main')
     }
   }, [user, authLoading, router])
 
@@ -49,7 +49,7 @@ export default function LoginPage() {
       if (error) {
         setError(error.message)
       } else {
-        router.push('/dashboard')
+        router.push('/main')
       }
     } catch (err) {
       setError('Erro inesperado. Tente novamente.')

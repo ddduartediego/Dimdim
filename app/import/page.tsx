@@ -126,11 +126,11 @@ export default function ImportPage() {
   }
 
   const handleGoToDashboard = () => {
-    router.push('/dashboard')
+              router.push('/main')
   }
 
   const handleGoToTransactions = () => {
-    router.push('/transactions')
+              router.push('/main')
   }
 
   const renderStepContent = () => {

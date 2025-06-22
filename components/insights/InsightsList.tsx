@@ -50,10 +50,10 @@ export default function InsightsList({ insights, loading = false }: InsightsList
         router.push('/budgets')
         break
       case 'spending':
-        router.push('/transactions')
+                  router.push('/main')
         break
       case 'saving':
-        router.push('/dashboard')
+                  router.push('/main')
         break
       default:
         console.log('Insight ação:', insight)
@@ -106,7 +106,7 @@ export default function InsightsList({ insights, loading = false }: InsightsList
         <Stack direction="row" spacing={1}>
           <Button
             variant="outlined"
-            onClick={() => router.push('/transactions')}
+            onClick={() => router.push('/main')}
             startIcon={<Icon>add</Icon>}
           >
             Adicionar Transação
