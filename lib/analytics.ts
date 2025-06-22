@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { formatCurrency } from './utils'
 import { MonthlyInsight, TransactionWithCategory } from '@/types/database'
+import { CustomInsightsEngine } from './customInsightsEngine'
 import dayjs from 'dayjs'
 
 export interface CategoryAnalytics {
@@ -177,7 +178,63 @@ export class AnalyticsEngine {
     // Insight 5: Meta de transações
     this.addTransactionPatternInsight(insights, analytics)
 
+    // Marcar insights automáticos
+    insights.forEach(insight => {
+      insight.source = 'automatic'
+    })
+
     return insights.filter(Boolean) // Remove insights vazios
+  }
+
+  /**
+   * Gera insights combinados (automáticos + personalizados)
+   */
+  async generateAllInsights(month: number, year: number): Promise<MonthlyInsight[]> {
+    try {
+      // Buscar insights automáticos e personalizados em paralelo
+      const [automaticInsights, customInsights] = await Promise.all([
+        this.generateInsights(month, year),
+        this.generateCustomInsights(month, year)
+      ])
+
+      // Combinar e ordenar por severidade/tipo
+      const allInsights = [...automaticInsights, ...customInsights]
+      
+      // Ordenar: críticos primeiro, depois por tipo
+      return allInsights.sort((a, b) => {
+        const severityOrder = { error: 0, warning: 1, success: 2, info: 3 }
+        const severityA = severityOrder[a.severity] ?? 4
+        const severityB = severityOrder[b.severity] ?? 4
+        
+        if (severityA !== severityB) {
+          return severityA - severityB
+        }
+        
+        // Se mesma severidade, priorizar insights acionáveis
+        if (a.actionable !== b.actionable) {
+          return a.actionable ? -1 : 1
+        }
+        
+        return 0
+      })
+    } catch (error) {
+      console.error('Erro ao gerar insights combinados:', error)
+      // Em caso de erro, retorna apenas insights automáticos
+      return this.generateInsights(month, year)
+    }
+  }
+
+  /**
+   * Gera apenas insights personalizados
+   */
+  async generateCustomInsights(month: number, year: number): Promise<MonthlyInsight[]> {
+    try {
+      const customEngine = new CustomInsightsEngine(this.userId)
+      return await customEngine.evaluateCustomInsights(month, year)
+    } catch (error) {
+      console.error('Erro ao gerar insights personalizados:', error)
+      return []
+    }
   }
 
   private addExpenseComparisonInsight(insights: MonthlyInsight[], analytics: MonthlyAnalytics) {

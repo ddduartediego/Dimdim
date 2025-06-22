@@ -21,8 +21,10 @@ import {
   ArrowBack,
   Category as CategoryIcon,
   AdminPanelSettings,
+  Psychology,
 } from '@mui/icons-material'
 import AdminCategoriesList from '@/components/settings/AdminCategoriesList'
+import CustomInsightsList from '@/components/settings/CustomInsightsList'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -114,7 +116,13 @@ export default function SettingsPage() {
                 sx={{ textTransform: 'none', fontWeight: 500 }}
                 {...a11yProps(0)} 
               />
-              {/* Futuros tabs serão adicionados aqui */}
+              <Tab 
+                icon={<Psychology />} 
+                label="Insights Personalizados" 
+                iconPosition="start"
+                sx={{ textTransform: 'none', fontWeight: 500 }}
+                {...a11yProps(1)} 
+              />
             </Tabs>
           </Box>
 
@@ -134,6 +142,24 @@ export default function SettingsPage() {
               <Divider sx={{ mb: 3 }} />
               
               <AdminCategoriesList />
+            </Box>
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={1}>
+            <Box sx={{ px: 3 }}>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: 'text.primary' }}>
+                  Insights Personalizados
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Crie e gerencie seus insights personalizados para receber alertas automáticos
+                  baseados em condições específicas dos seus dados financeiros.
+                </Typography>
+              </Box>
+              
+              <Divider sx={{ mb: 3 }} />
+              
+              <CustomInsightsList />
             </Box>
           </TabPanel>
         </Paper>

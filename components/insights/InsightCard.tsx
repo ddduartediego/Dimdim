@@ -82,7 +82,7 @@ export default function InsightCard({ insight, onAction }: InsightCardProps) {
       <CardContent>
         {/* Header com tipo e severidade */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <Icon 
               color={getSeverityColor(insight.severity)}
               sx={{ fontSize: 20 }}
@@ -95,6 +95,15 @@ export default function InsightCard({ insight, onAction }: InsightCardProps) {
               color={getSeverityColor(insight.severity)}
               variant="outlined"
             />
+            {insight.source === 'custom' && (
+              <Chip
+                label="Personalizado"
+                size="small"
+                color="primary"
+                variant="filled"
+                sx={{ fontSize: '0.7rem', height: 20 }}
+              />
+            )}
           </Box>
           
           {insight.actionable && (

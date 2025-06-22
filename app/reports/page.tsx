@@ -27,6 +27,7 @@ import useInsights from '@/hooks/useInsights'
 import CategoryPieChart from '@/components/charts/CategoryPieChart'
 import MonthlyComparison from '@/components/charts/MonthlyComparison'
 import InsightsList from '@/components/insights/InsightsList'
+import CustomInsightsReportsList from '@/components/insights/CustomInsightsReportsList'
 
 dayjs.locale('pt-br')
 
@@ -60,6 +61,8 @@ export default function ReportsPage() {
 
   const {
     insights,
+    automaticInsights,
+    customInsights,
     analytics,
     categoryData,
     loading,
@@ -206,8 +209,13 @@ export default function ReportsPage() {
           scrollButtons="auto"
         >
           <Tab 
-            label="Insights" 
-            icon={<Icon>lightbulb</Icon>}
+            label="Insights Automáticos" 
+            icon={<Icon>auto_awesome</Icon>}
+            iconPosition="start"
+          />
+          <Tab 
+            label="Insights Personalizados" 
+            icon={<Icon>psychology</Icon>}
             iconPosition="start"
           />
           <Tab 
@@ -225,14 +233,41 @@ export default function ReportsPage() {
 
       {/* Conteúdo das tabs */}
       <TabPanel value={tabValue} index={0}>
-        {/* Tab Insights */}
+        {/* Tab Insights Automáticos */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Icon color="primary">auto_awesome</Icon>
+            Insights Automáticos
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Análises geradas automaticamente com base nos seus dados financeiros
+          </Typography>
+        </Box>
         <InsightsList 
-          insights={insights} 
+          insights={automaticInsights} 
           loading={loading}
         />
       </TabPanel>
 
       <TabPanel value={tabValue} index={1}>
+        {/* Tab Insights Personalizados */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Icon color="primary">psychology</Icon>
+            Insights Personalizados
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Alertas criados por você com condições específicas
+          </Typography>
+        </Box>
+        
+        <CustomInsightsReportsList 
+          insights={insights} 
+          loading={loading}
+        />
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={2}>
         {/* Tab Gráficos */}
         <Grid container spacing={4}>
           <Grid item xs={12} lg={8}>
@@ -314,7 +349,7 @@ export default function ReportsPage() {
         </Grid>
       </TabPanel>
 
-      <TabPanel value={tabValue} index={2}>
+      <TabPanel value={tabValue} index={3}>
         {/* Tab Comparação */}
         {analytics ? (
           <Paper elevation={1} sx={{ p: 3 }}>

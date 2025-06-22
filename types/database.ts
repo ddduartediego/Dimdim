@@ -100,6 +100,50 @@ export interface Database {
           updated_at?: string
         }
       }
+      custom_insights: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          description: string | null
+          conditions: any | null
+          formula: string | null
+          is_active: boolean
+          insight_type: 'custom' | 'template'
+          template_id: string | null
+          severity: 'info' | 'warning' | 'success' | 'error'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string
+          name: string
+          description?: string | null
+          conditions?: any | null
+          formula?: string | null
+          is_active?: boolean
+          insight_type?: 'custom' | 'template'
+          template_id?: string | null
+          severity?: 'info' | 'warning' | 'success' | 'error'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          description?: string | null
+          conditions?: any | null
+          formula?: string | null
+          is_active?: boolean
+          insight_type?: 'custom' | 'template'
+          template_id?: string | null
+          severity?: 'info' | 'warning' | 'success' | 'error'
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       transactions_with_category: {
@@ -196,6 +240,75 @@ export interface MonthlyInsight {
   title: string
   description: string
   actionable: boolean
+  data?: any
+  source?: 'automatic' | 'custom' // Nova propriedade para identificar origem
+  customInsightId?: string // ID do insight personalizado (se aplicável)
+}
+
+// ================================
+// CUSTOM INSIGHTS TYPES
+// ================================
+
+export interface CustomInsight {
+  id: string
+  user_id: string
+  name: string
+  description: string | null
+  conditions: InsightConditions | null
+  formula: string | null
+  is_active: boolean
+  insight_type: 'custom' | 'template'
+  template_id: string | null
+  severity: 'info' | 'warning' | 'success' | 'error'
+  created_at: string
+  updated_at: string
+}
+
+export type CustomInsightInsert = Omit<CustomInsight, 'id' | 'created_at' | 'updated_at'> & {
+  id?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export type CustomInsightUpdate = Partial<CustomInsightInsert>
+
+// Estrutura para condições de insights personalizados
+export interface InsightConditions {
+  field: string // Campo a ser avaliado (ex: 'category_amount', 'expenses_change_percentage')
+  operator: '>' | '<' | '>=' | '<=' | '==' | '!=' | 'contains' | 'not_contains'
+  value?: number | string // Valor de comparação
+  function?: string // Função estatística (ex: 'average_plus_stddev')
+  category?: string | null // Categoria específica (se aplicável)
+  logic?: 'AND' | 'OR' // Para combinação de condições
+  children?: InsightConditions[] // Condições aninhadas
+}
+
+// Templates pré-definidos
+export interface InsightTemplate {
+  id: string
+  name: string
+  description: string
+  defaultConditions: InsightConditions
+  defaultSeverity: 'info' | 'warning' | 'success' | 'error'
+  category: 'budget' | 'spending' | 'saving' | 'transaction' | 'trend'
+  parameters: TemplateParameter[]
+}
+
+export interface TemplateParameter {
+  key: string
+  label: string
+  type: 'number' | 'text' | 'category' | 'percentage'
+  defaultValue?: any
+  required: boolean
+  description?: string
+}
+
+// Resultado de avaliação de insights personalizados
+export interface CustomInsightResult {
+  insight: CustomInsight
+  triggered: boolean
+  currentValue?: number | string
+  message?: string
   data?: any
 }
 
