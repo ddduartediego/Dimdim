@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -33,7 +33,6 @@ import {
   Edit,
   Delete,
   MonetizationOn,
-  TrendingUp,
   Warning,
   CheckCircle,
   Error as ErrorIcon,
@@ -59,13 +58,7 @@ export default function BudgetsPage() {
     }
   }, [user, authLoading, router])
 
-  useEffect(() => {
-    if (user) {
-      fetchData()
-    }
-  }, [user, selectedMonth, selectedYear])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true)
       setError('')
@@ -135,7 +128,13 @@ export default function BudgetsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedMonth, selectedYear])
+
+  useEffect(() => {
+    if (user) {
+      fetchData()
+    }
+  }, [user, fetchData])
 
   const handleCreateBudget = async (data: BudgetFormData) => {
     try {

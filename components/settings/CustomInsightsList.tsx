@@ -40,7 +40,7 @@ import {
 } from '@mui/icons-material'
 import { useCustomInsights } from '@/hooks/useCustomInsights'
 import { CustomInsight } from '@/types/database'
-import CustomInsightWizard from './CustomInsightWizard'
+import CustomInsightWizard from '@/components/settings/CustomInsightWizard'
 
 export default function CustomInsightsList() {
   const {
@@ -333,7 +333,7 @@ export default function CustomInsightsList() {
         <DialogTitle>Confirmar Exclusão</DialogTitle>
         <DialogContent>
           <Typography>
-            Tem certeza que deseja excluir o insight "{deletingInsight?.name}"?
+            Tem certeza que deseja excluir o insight &quot;{deletingInsight?.name}&quot;?
             Esta ação não pode ser desfeita.
           </Typography>
         </DialogContent>

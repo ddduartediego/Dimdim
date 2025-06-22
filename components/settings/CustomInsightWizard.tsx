@@ -319,7 +319,7 @@ export default function CustomInsightWizard({ open, onClose, editingInsight }: C
                     Crie uma fórmula usando as variáveis disponíveis:
                     <br />• total_expenses, total_income, balance
                     <br />• transaction_count, expenses_change_percentage
-                    <br />• category_amount['Nome da Categoria']
+                    <br />• category_amount[&apos;Nome da Categoria&apos;]
                   </Typography>
                 </Alert>
 
@@ -328,7 +328,7 @@ export default function CustomInsightWizard({ open, onClose, editingInsight }: C
                   multiline
                   rows={4}
                   label="Fórmula"
-                  placeholder="Ex: total_expenses > 1000 AND category_amount['Alimentação'] > 500"
+                  placeholder="Ex: total_expenses > 1000 AND category_amount[&apos;Alimentação&apos;] > 500"
                   value={formData.formula}
                   onChange={(e) => setFormData(prev => ({ ...prev, formula: e.target.value }))}
                   helperText="Use operadores: >, <, >=, <=, ==, != e lógicos AND, OR"

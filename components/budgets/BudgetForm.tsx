@@ -354,7 +354,7 @@ export default function BudgetForm({
           {watch('month') === 0 && (
             <Box sx={{ mt: 2, p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
               <Typography variant="body2" color="primary.dark">
-                📅 <strong>Orçamento Anual:</strong> Ao selecionar "Todos os meses", será criado um orçamento 
+                📅 <strong>Orçamento Anual:</strong> Ao selecionar &quot;Todos os meses&quot;, será criado um orçamento 
                 de {formatCurrency(watchedAmount)} para cada mês do ano {watch('year')}. 
                 Total anual: <strong>{formatCurrency(watchedAmount * 12)}</strong>
               </Typography>
