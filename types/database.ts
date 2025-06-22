@@ -199,6 +199,22 @@ export interface MonthlyInsight {
   data?: any
 }
 
+// Interface para ícones disponíveis
+export interface AvailableIcon {
+  id: string
+  name: string
+  description: string
+  category: string
+  keywords: string[]
+  is_popular: boolean
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+// Tipo para inserção de ícones
+export type AvailableIconInsert = Omit<AvailableIcon, 'id' | 'created_at' | 'updated_at'>
+
 // Constantes para categorias padrão
 export const DEFAULT_CATEGORIES = [
   { name: 'Alimentação', color: '#FF9800', icon: 'restaurant' },

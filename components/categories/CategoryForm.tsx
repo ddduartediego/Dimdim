@@ -21,8 +21,10 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material'
-import { Close } from '@mui/icons-material'
+import { Close, Search } from '@mui/icons-material'
 import { Category } from '@/types/database'
+import IconSearchModal from './IconSearchModal'
+import { getPopularIcons } from '@/lib/materialIcons'
 
 interface CategoryFormProps {
   open: boolean
@@ -32,29 +34,8 @@ interface CategoryFormProps {
   loading?: boolean
 }
 
-// Ícones disponíveis para categorias
-const AVAILABLE_ICONS = [
-  'restaurant',
-  'directions_car',
-  'home',
-  'local_hospital',
-  'sports_esports',
-  'shopping_cart',
-  'school',
-  'work',
-  'fitness_center',
-  'local_gas_station',
-  'phone',
-  'pets',
-  'flight',
-  'hotel',
-  'movie',
-  'music_note',
-  'book',
-  'coffee',
-  'local_cafe',
-  'fastfood',
-]
+// Ícones populares para seleção rápida (usando a nova biblioteca)
+const POPULAR_ICONS = getPopularIcons(20).map(icon => icon.name)
 
 // Cores pré-definidas
 const PREDEFINED_COLORS = [
@@ -84,6 +65,7 @@ export default function CategoryForm({
 }: CategoryFormProps) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [iconSearchOpen, setIconSearchOpen] = useState(false)
 
   const {
     control,
@@ -123,6 +105,11 @@ export default function CategoryForm({
     } catch (err: any) {
       setError(err.message || 'Erro ao salvar categoria')
     }
+  }
+
+  const handleIconSelect = (iconName: string) => {
+    setValue('icon', iconName)
+    setIconSearchOpen(false)
   }
 
   return (
@@ -238,11 +225,27 @@ export default function CategoryForm({
             </Grid>
 
             <Grid item xs={12}>
-              <Typography variant="subtitle2" gutterBottom>
-                Ícone da categoria
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="subtitle2">
+                  Ícone da categoria
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<Search />}
+                  onClick={() => setIconSearchOpen(true)}
+                  sx={{ minWidth: 140 }}
+                >
+                  Buscar Ícones
+                </Button>
+              </Box>
+              
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                Ícones populares (ou clique em "Buscar Ícones" para ver mais opções):
               </Typography>
+              
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', maxHeight: 200, overflow: 'auto' }}>
-                {AVAILABLE_ICONS.map((iconName) => (
+                {POPULAR_ICONS.map((iconName) => (
                   <IconButton
                     key={iconName}
                     onClick={() => setValue('icon', iconName)}
@@ -285,6 +288,14 @@ export default function CategoryForm({
           </Button>
         </DialogActions>
       </form>
+
+      {/* Modal de Busca de Ícones */}
+      <IconSearchModal
+        open={iconSearchOpen}
+        onClose={() => setIconSearchOpen(false)}
+        onSelectIcon={handleIconSelect}
+        currentIcon={watchedIcon}
+      />
     </Dialog>
   )
 } 
