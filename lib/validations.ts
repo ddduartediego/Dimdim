@@ -50,7 +50,7 @@ export const budgetSchema = z.object({
     .max(999999.99, 'Valor muito alto'),
   month: z.number()
     .int('Mês deve ser um número inteiro')
-    .min(1, 'Mês inválido')
+    .min(0, 'Mês inválido')
     .max(12, 'Mês inválido'),
   year: z.number()
     .int('Ano deve ser um número inteiro')

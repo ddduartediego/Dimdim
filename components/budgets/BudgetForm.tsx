@@ -120,6 +120,12 @@ export default function BudgetForm({
   const currentYear = new Date().getFullYear()
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
 
+  // Função para obter o texto do mês para display
+  const getMonthDisplayText = (monthValue: number) => {
+    if (monthValue === 0) return 'Todos os meses'
+    return months[monthValue - 1]
+  }
+
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>
@@ -178,7 +184,7 @@ export default function BudgetForm({
                 {formatCurrency(watchedAmount)}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {months[watch('month') - 1]} {watch('year')}
+                {getMonthDisplayText(watch('month'))} {watch('year')}
               </Typography>
             </Box>
           )}
@@ -249,6 +255,10 @@ export default function BudgetForm({
                 render={({ field }) => (
                   <TextField
                     {...field}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value) || 0;
+                      field.onChange(value);
+                    }}
                     label="Valor do orçamento"
                     type="number"
                     fullWidth
@@ -281,6 +291,14 @@ export default function BudgetForm({
                       label="Mês *"
                       disabled={loading || isSubmitting}
                     >
+                      <MenuItem value={0}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Icon sx={{ fontSize: 18, color: 'primary.main' }}>calendar_month</Icon>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                            Todos os meses
+                          </Typography>
+                        </Box>
+                      </MenuItem>
                       {months.map((month, index) => (
                         <MenuItem key={index + 1} value={index + 1}>
                           {month}
@@ -332,6 +350,16 @@ export default function BudgetForm({
               Você receberá alertas quando atingir 50%, 80% e 100% do orçamento.
             </Typography>
           </Box>
+
+          {watch('month') === 0 && (
+            <Box sx={{ mt: 2, p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
+              <Typography variant="body2" color="primary.dark">
+                📅 <strong>Orçamento Anual:</strong> Ao selecionar "Todos os meses", será criado um orçamento 
+                de {formatCurrency(watchedAmount)} para cada mês do ano {watch('year')}. 
+                Total anual: <strong>{formatCurrency(watchedAmount * 12)}</strong>
+              </Typography>
+            </Box>
+          )}
         </DialogContent>
 
         <DialogActions>

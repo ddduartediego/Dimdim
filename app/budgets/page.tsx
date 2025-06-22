@@ -139,20 +139,75 @@ export default function BudgetsPage() {
 
   const handleCreateBudget = async (data: BudgetFormData) => {
     try {
-      const { error: insertError } = await supabase
-        .from('budgets')
-        .insert({
-          ...data,
-          user_id: user!.id,
-        })
+      if (data.month === 0) {
+        // Verificar se já existem orçamentos para esta categoria no ano
+        const { data: existingBudgets, error: checkError } = await supabase
+          .from('budgets')
+          .select('month')
+          .eq('user_id', user!.id)
+          .eq('category_id', data.category_id)
+          .eq('year', data.year)
 
-      if (insertError) {
-        console.error('Erro ao criar orçamento:', insertError)
-        throw new Error('Erro ao criar orçamento')
+        if (checkError) {
+          console.error('Erro ao verificar orçamentos existentes:', checkError)
+          throw new Error('Erro ao verificar orçamentos existentes')
+        }
+
+        const existingMonths = existingBudgets?.map(b => b.month) || []
+        const monthsToCreate = []
+        
+        for (let month = 1; month <= 12; month++) {
+          if (!existingMonths.includes(month)) {
+            monthsToCreate.push({
+              category_id: data.category_id,
+              amount: data.amount,
+              month: month,
+              year: data.year,
+              user_id: user!.id,
+            })
+          }
+        }
+
+        if (monthsToCreate.length === 0) {
+          throw new Error('Já existem orçamentos para todos os meses desta categoria no ano selecionado')
+        }
+
+        const { error: insertError } = await supabase
+          .from('budgets')
+          .insert(monthsToCreate)
+
+        if (insertError) {
+          console.error('Erro ao criar orçamentos:', insertError)
+          throw new Error('Erro ao criar orçamentos para todos os meses')
+        }
+
+        const createdCount = monthsToCreate.length
+        const skippedCount = 12 - createdCount
+        
+        let successMessage = `${createdCount} orçamento${createdCount > 1 ? 's' : ''} criado${createdCount > 1 ? 's' : ''}!`
+        if (skippedCount > 0) {
+          successMessage += ` (${skippedCount} já existia${skippedCount > 1 ? 'm' : ''})`
+        }
+        
+        setSuccess(successMessage)
+      } else {
+        // Criar orçamento para um mês específico
+        const { error: insertError } = await supabase
+          .from('budgets')
+          .insert({
+            ...data,
+            user_id: user!.id,
+          })
+
+        if (insertError) {
+          console.error('Erro ao criar orçamento:', insertError)
+          throw new Error('Erro ao criar orçamento')
+        }
+        
+        setSuccess('Orçamento criado com sucesso!')
       }
 
       await fetchData()
-      setSuccess('Orçamento criado com sucesso!')
       setTimeout(() => setSuccess(''), 3000)
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Erro ao criar orçamento')
