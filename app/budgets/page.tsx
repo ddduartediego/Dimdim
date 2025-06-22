@@ -36,7 +36,7 @@ import {
   TrendingUp,
   Warning,
   CheckCircle,
-  Error,
+  Error as ErrorIcon,
 } from '@mui/icons-material'
 import BudgetForm from '@/components/budgets/BudgetForm'
 
@@ -236,9 +236,9 @@ export default function BudgetsPage() {
       case 'warning':
         return <Warning color="warning" />
       case 'danger':
-        return <Error color="error" />
+        return <ErrorIcon color="error" />
       case 'exceeded':
-        return <Error color="error" />
+        return <ErrorIcon color="error" />
       default:
         return <CheckCircle color="success" />
     }

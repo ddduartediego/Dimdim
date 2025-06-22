@@ -84,7 +84,7 @@ export default function CategoriesPage() {
 
   const handleCreateCategory = async (data: CategoryFormData) => {
     try {
-      const categoryData: CategoryInsert = {
+      const categoryData = {
         ...data,
         user_id: user!.id,
         is_default: false,
@@ -95,14 +95,15 @@ export default function CategoriesPage() {
         .insert(categoryData)
 
       if (insertError) {
-        throw new Error(insertError.message)
+        console.error('Erro ao criar categoria:', insertError)
+        throw new Error('Erro ao criar categoria')
       }
 
       await fetchCategories()
       setSuccess('Categoria criada com sucesso!')
       setTimeout(() => setSuccess(''), 3000)
-    } catch (err: any) {
-      throw new Error(err.message || 'Erro ao criar categoria')
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Erro ao criar categoria')
     }
   }
 
@@ -120,14 +121,15 @@ export default function CategoriesPage() {
         .eq('id', editingCategory.id)
 
       if (updateError) {
-        throw new Error(updateError.message)
+        console.error('Erro ao atualizar categoria:', updateError)
+        throw new Error('Erro ao atualizar categoria')
       }
 
       await fetchCategories()
       setSuccess('Categoria atualizada com sucesso!')
       setTimeout(() => setSuccess(''), 3000)
-    } catch (err: any) {
-      throw new Error(err.message || 'Erro ao atualizar categoria')
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Erro ao atualizar categoria')
     }
   }
 
@@ -149,14 +151,15 @@ export default function CategoriesPage() {
         .eq('id', category.id)
 
       if (deleteError) {
-        throw new Error(deleteError.message)
+        console.error('Erro ao excluir categoria:', deleteError)
+        throw new Error('Erro ao excluir categoria')
       }
 
       await fetchCategories()
       setSuccess('Categoria excluída com sucesso!')
       setTimeout(() => setSuccess(''), 3000)
-    } catch (err: any) {
-      setError(err.message || 'Erro ao excluir categoria')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao excluir categoria')
       setTimeout(() => setError(''), 3000)
     }
   }
