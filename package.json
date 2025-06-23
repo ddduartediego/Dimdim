@@ -7,13 +7,23 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "build:analyze": "ANALYZE=true npm run build",
+    "security:audit": "npm audit --audit-level high",
+    "security:fix": "npm audit fix",
+    "clean": "rm -rf .next out dist",
+    "prod:build": "npm run clean && npm run type-check && npm run lint && npm run build",
+    "prod:start": "NODE_ENV=production npm run start"
   },
   "keywords": [
     "finanças",
     "gestão",
     "pessoal",
-    "next.js"
+    "next.js",
+    "typescript",
+    "supabase"
   ],
   "author": "",
   "license": "ISC",
@@ -42,5 +52,9 @@
     "recharts": "^2.15.4",
     "typescript": "^5.8.3",
     "zod": "^3.25.67"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }
