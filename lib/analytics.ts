@@ -304,31 +304,68 @@ export class AnalyticsEngine {
 
   private async addBudgetInsights(insights: MonthlyInsight[], month: number, year: number) {
     try {
-      const { data: budgetStats, error } = await supabase
-        .from('budget_statistics')
-        .select('*')
+      // Buscar orçamentos do usuário para o período
+      const { data: budgets, error: budgetsError } = await supabase
+        .from('budgets')
+        .select(`
+          *,
+          categories (
+            name,
+            color,
+            icon
+          )
+        `)
+        .eq('user_id', this.userId)
         .eq('month', month)
         .eq('year', year)
-        .gte('percentage_used', 80) // Apenas orçamentos com 80%+ de uso
 
-      if (error || !budgetStats || budgetStats.length === 0) return
+      if (budgetsError || !budgets || budgets.length === 0) return
 
-      budgetStats.forEach(stat => {
-        const isExceeded = stat.percentage_used >= 100
+      // Buscar gastos do período para calcular percentuais
+      const startDate = `${year}-${month.toString().padStart(2, '0')}-01`
+      const endDate = new Date(year, month, 0).toISOString().split('T')[0]
+      
+      const { data: expenses, error: expensesError } = await supabase
+        .from('transactions')
+        .select('category_id, amount')
+        .eq('user_id', this.userId)
+        .eq('type', 'expense')
+        .gte('date', startDate)
+        .lte('date', endDate)
+
+      if (expensesError) return
+
+      // Calcular gastos por categoria
+      const spentByCategory = (expenses || []).reduce((acc, expense) => {
+        if (expense.category_id) {
+          acc[expense.category_id] = (acc[expense.category_id] || 0) + expense.amount
+        }
+        return acc
+      }, {} as Record<string, number>)
+
+      // Gerar insights para orçamentos com 80%+ de uso
+      budgets.forEach(budget => {
+        const spentAmount = spentByCategory[budget.category_id] || 0
+        const percentageUsed = budget.amount > 0 ? (spentAmount / budget.amount) * 100 : 0
         
-        insights.push({
-          type: 'budget',
-          severity: isExceeded ? 'error' : 'warning',
-          title: `${isExceeded ? '🚨' : '⚠️'} Orçamento de ${stat.category_name}`,
-          description: `${isExceeded ? 'Orçamento excedido!' : 'Limite próximo!'} Você ${isExceeded ? 'excedeu' : 'atingiu'} ${stat.percentage_used.toFixed(1)}% do orçamento de ${stat.category_name}.`,
-          actionable: true,
-          data: { 
-            category: stat.category_name, 
-            percentage: stat.percentage_used,
-            amount: stat.spent_amount,
-            budget: stat.amount 
-          }
-        })
+        if (percentageUsed >= 80) {
+          const isExceeded = percentageUsed >= 100
+          const categoryName = budget.categories?.name || 'Categoria'
+          
+          insights.push({
+            type: 'budget',
+            severity: isExceeded ? 'error' : 'warning',
+            title: `${isExceeded ? '🚨' : '⚠️'} Orçamento de ${categoryName}`,
+            description: `${isExceeded ? 'Orçamento excedido!' : 'Limite próximo!'} Você ${isExceeded ? 'excedeu' : 'atingiu'} ${percentageUsed.toFixed(1)}% do orçamento de ${categoryName}.`,
+            actionable: true,
+            data: { 
+              category: categoryName, 
+              percentage: percentageUsed,
+              amount: spentAmount,
+              budget: budget.amount 
+            }
+          })
+        }
       })
     } catch (error) {
       console.error('Erro ao buscar insights de orçamento:', error)

@@ -421,13 +421,36 @@ export class CustomInsightsEngine {
     // Agrupar por categoria
     const categoriesData = this.groupByCategory(transactionsList.filter(t => t.type === 'expense'))
 
-    // Buscar dados de orçamento do período
-    const { data: budgetData } = await supabase
-      .from('budget_statistics')
-      .select('*')
+    // Buscar dados de orçamento do período de forma segura
+    const { data: budgets } = await supabase
+      .from('budgets')
+      .select(`
+        *,
+        categories (
+          name,
+          color,
+          icon
+        )
+      `)
       .eq('user_id', this.userId)
       .eq('month', month)
       .eq('year', year)
+
+    // Calcular estatísticas de orçamento manualmente
+    const budgetData = (budgets || []).map(budget => {
+      const categoryExpenses = categoriesData.find(cat => cat.category_id === budget.category_id)
+      const spentAmount = categoryExpenses?.total_amount || 0
+      const percentageUsed = budget.amount > 0 ? (spentAmount / budget.amount) * 100 : 0
+      
+      return {
+        ...budget,
+        category_name: budget.categories?.name || 'Categoria',
+        category_color: budget.categories?.color || '#999999',
+        category_icon: budget.categories?.icon || 'category',
+        spent_amount: spentAmount,
+        percentage_used: percentageUsed
+      }
+    })
 
     // Calcular dados do mês anterior para comparações
     const previousDate = dayjs(`${year}-${month}-01`).subtract(1, 'month')
@@ -443,7 +466,7 @@ export class CustomInsightsEngine {
       balance,
       transactionCount: transactionsList.length,
       categoriesData,
-      budgetData: budgetData || [],
+      budgetData: budgetData,
       expensesChangePercentage,
       averages: {
         transaction_count: await this.calculateAverage('transaction_count', month, year),

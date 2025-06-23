@@ -77,36 +77,70 @@ export default function BudgetsPage() {
 
       setCategories(categoriesData || [])
 
-      // Buscar orçamentos com estatísticas
-      const { data: budgetsData, error: budgetsError } = await supabase
-        .from('budget_statistics')
-        .select('*')
+      // Buscar orçamentos com filtro de segurança por usuário
+      const { data: budgetsRawData, error: budgetsError } = await supabase
+        .from('budgets')
+        .select(`
+          *,
+          categories (
+            name,
+            color,
+            icon
+          )
+        `)
+        .eq('user_id', user!.id)
         .eq('month', selectedMonth)
         .eq('year', selectedYear)
-        .order('category_name')
+        .order('categories(name)')
 
       if (budgetsError) {
         console.error('Erro ao carregar orçamentos:', budgetsError)
         throw new Error('Erro ao carregar orçamentos')
       }
 
+      // Buscar transações do período para calcular gastos por categoria
+      const startDate = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}-01`
+      const endDate = new Date(selectedYear, selectedMonth, 0).toISOString().split('T')[0]
+      
+      const { data: transactionsData, error: transactionsError } = await supabase
+        .from('transactions')
+        .select('category_id, amount')
+        .eq('user_id', user!.id)
+        .eq('type', 'expense')
+        .gte('date', startDate)
+        .lte('date', endDate)
+
+      if (transactionsError) {
+        console.error('Erro ao carregar transações:', transactionsError)
+        throw new Error('Erro ao carregar transações')
+      }
+
+      // Calcular gastos por categoria
+      const spentByCategory = (transactionsData || []).reduce((acc, transaction) => {
+        if (transaction.category_id) {
+          acc[transaction.category_id] = (acc[transaction.category_id] || 0) + transaction.amount
+        }
+        return acc
+      }, {} as Record<string, number>)
+
       // Transformar dados em BudgetProgress
-      const budgetProgresses: BudgetProgress[] = (budgetsData || []).map(stat => {
-        const category = categoriesData?.find(c => c.id === stat.category_id)
+      const budgetProgresses: BudgetProgress[] = (budgetsRawData || []).map(budgetData => {
         const budget: Budget = {
-          id: stat.id,
-          user_id: stat.user_id,
-          category_id: stat.category_id,
-          amount: stat.amount,
-          month: stat.month,
-          year: stat.year,
-          created_at: stat.created_at,
-          updated_at: stat.updated_at,
+          id: budgetData.id,
+          user_id: budgetData.user_id,
+          category_id: budgetData.category_id,
+          amount: budgetData.amount,
+          month: budgetData.month,
+          year: budgetData.year,
+          created_at: budgetData.created_at,
+          updated_at: budgetData.updated_at,
         }
 
-        const percentage = stat.percentage_used
-        let status: 'safe' | 'warning' | 'danger' | 'exceeded' = 'safe'
+        const category = budgetData.categories || categoriesData?.find(c => c.id === budgetData.category_id)
+        const spentAmount = spentByCategory[budgetData.category_id] || 0
+        const percentage = budgetData.amount > 0 ? (spentAmount / budgetData.amount) * 100 : 0
         
+        let status: 'safe' | 'warning' | 'danger' | 'exceeded' = 'safe'
         if (percentage >= 100) status = 'exceeded'
         else if (percentage >= 80) status = 'danger'
         else if (percentage >= 50) status = 'warning'
@@ -114,9 +148,9 @@ export default function BudgetsPage() {
         return {
           budget,
           category: category!,
-          spent_amount: stat.spent_amount,
+          spent_amount: spentAmount,
           percentage_used: percentage,
-          remaining_amount: Math.max(0, stat.amount - stat.spent_amount),
+          remaining_amount: Math.max(0, budgetData.amount - spentAmount),
           status,
         }
       })

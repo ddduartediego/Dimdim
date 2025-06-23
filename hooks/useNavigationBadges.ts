@@ -43,26 +43,53 @@ export const useNavigationBadges = () => {
         .select('id')
         .eq('user_id', user?.id)
 
-      // Contar orçamentos próximos do limite (usando budget_statistics)
+      // Contar orçamentos próximos do limite (consulta segura por usuário)
       let budgetsNearLimit = []
       try {
         const currentDate = new Date()
         const currentMonth = currentDate.getMonth() + 1
         const currentYear = currentDate.getFullYear()
         
-        const { data: budgetStats, error: budgetError } = await supabase
-          .from('budget_statistics')
-          .select('id, percentage_used')
+        // Buscar orçamentos do usuário para o mês atual
+        const { data: budgets, error: budgetError } = await supabase
+          .from('budgets')
+          .select('id, amount, category_id')
+          .eq('user_id', user?.id)
           .eq('month', currentMonth)
           .eq('year', currentYear)
         
-        if (!budgetError && budgetStats) {
-          budgetsNearLimit = budgetStats.filter(budget => 
-            budget.percentage_used >= 80
-          )
+        if (!budgetError && budgets && budgets.length > 0) {
+          // Buscar gastos do mês atual por categoria
+          const startDate = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01`
+          const endDate = new Date(currentYear, currentMonth, 0).toISOString().split('T')[0]
+          
+          const { data: expenses, error: expensesError } = await supabase
+            .from('transactions')
+            .select('category_id, amount')
+            .eq('user_id', user?.id)
+            .eq('type', 'expense')
+            .gte('date', startDate)
+            .lte('date', endDate)
+          
+          if (!expensesError && expenses) {
+            // Calcular gastos por categoria
+            const spentByCategory = expenses.reduce((acc, expense) => {
+              if (expense.category_id) {
+                acc[expense.category_id] = (acc[expense.category_id] || 0) + expense.amount
+              }
+              return acc
+            }, {} as Record<string, number>)
+            
+            // Filtrar orçamentos próximos do limite (80%+)
+            budgetsNearLimit = budgets.filter(budget => {
+              const spent = spentByCategory[budget.category_id] || 0
+              const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0
+              return percentage >= 80
+            })
+          }
         }
       } catch (error) {
-        console.log('Budget statistics não disponível:', error)
+        console.log('Erro ao calcular orçamentos próximos do limite:', error)
         // Fallback silencioso - não quebra a aplicação
         budgetsNearLimit = []
       }
