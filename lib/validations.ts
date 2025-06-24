@@ -40,6 +40,29 @@ export const transactionSchema = z.object({
   }),
   date: z.string().min(1, 'Data é obrigatória'),
   category_id: z.string().uuid('Categoria inválida').optional().nullable(),
+  account_id: z.string().uuid('Conta inválida').optional().nullable(),
+})
+
+// Validação para contas
+export const accountSchema = z.object({
+  name: z.string().min(1, 'Nome é obrigatório').max(100, 'Nome muito longo'),
+  type: z.enum(['checking', 'credit_card'], {
+    required_error: 'Tipo de conta é obrigatório',
+  }),
+  initial_balance: z.number().default(0),
+  is_default: z.boolean().default(false),
+})
+
+// Validação para transferências entre contas
+export const accountTransferSchema = z.object({
+  from_account_id: z.string().uuid('Conta de origem inválida'),
+  to_account_id: z.string().uuid('Conta de destino inválida'),
+  amount: z.number().positive('Valor deve ser positivo'),
+  description: z.string().min(1, 'Descrição é obrigatória').max(200, 'Descrição muito longa'),
+  date: z.string().min(1, 'Data é obrigatória'),
+}).refine((data) => data.from_account_id !== data.to_account_id, {
+  message: 'Conta de origem e destino devem ser diferentes',
+  path: ['to_account_id'],
 })
 
 // Validação para orçamentos
@@ -160,6 +183,8 @@ export type LoginFormData = z.infer<typeof loginSchema>
 export type RegisterFormData = z.infer<typeof registerSchema>
 export type CategoryFormData = z.infer<typeof categorySchema>
 export type TransactionFormData = z.infer<typeof transactionSchema>
+export type AccountFormData = z.infer<typeof accountSchema>
+export type AccountTransferFormData = z.infer<typeof accountTransferSchema>
 export type BudgetFormData = z.infer<typeof budgetSchema>
 export type FiltersFormData = z.infer<typeof filtersSchema>
 export type CsvImportData = z.infer<typeof csvImportSchema>

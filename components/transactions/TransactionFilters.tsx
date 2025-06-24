@@ -29,7 +29,7 @@ import {
   AttachMoney,
   CalendarToday,
 } from '@mui/icons-material'
-import { TransactionWithCategory } from '@/types/database'
+import { TransactionWithAccountAndCategory } from '@/types/database'
 
 export interface TransactionFiltersData {
   date?: string
@@ -41,8 +41,8 @@ export interface TransactionFiltersData {
 }
 
 interface TransactionFiltersProps {
-  transactions: TransactionWithCategory[]
-  onFiltersChange: (filteredTransactions: TransactionWithCategory[]) => void
+  transactions: TransactionWithAccountAndCategory[]
+  onFiltersChange: (filteredTransactions: TransactionWithAccountAndCategory[]) => void
   onFiltersDataChange?: (filters: TransactionFiltersData) => void
   selectedMonth: number
   selectedYear: number

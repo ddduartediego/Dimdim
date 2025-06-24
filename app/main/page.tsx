@@ -8,12 +8,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { transactionSchema, TransactionFormData } from '@/lib/validations'
 import { supabase } from '@/lib/supabase'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { TransactionWithCategory } from '@/types/database'
+import { TransactionWithAccountAndCategory } from '@/types/database'
 import { useDashboardData } from '@/hooks/useDashboardData'
-import MonthlyFilter from '@/components/common/MonthlyFilter'
+
 import TransactionFilters from '@/components/transactions/TransactionFilters'
 import CategorySelect from '@/components/categories/CategorySelect'
 import CategoryChip from '@/components/categories/CategoryChip'
+import AccountSelect from '@/components/accounts/AccountSelect'
 import {
   Box,
   Container,
@@ -52,6 +53,9 @@ import {
   TrendingDown,
   AccountBalanceWallet,
   Receipt,
+  ChevronLeft,
+  ChevronRight,
+  Refresh,
 } from '@mui/icons-material'
 import dayjs from 'dayjs'
 import 'dayjs/locale/pt-br'
@@ -63,8 +67,9 @@ export default function MainPage() {
   const [selectedMonth, setSelectedMonth] = useState(dayjs().month() + 1)
   const [selectedYear, setSelectedYear] = useState(dayjs().year())
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingTransaction, setEditingTransaction] = useState<TransactionWithCategory | null>(null)
-  const [filteredTransactions, setFilteredTransactions] = useState<TransactionWithCategory[]>([])
+  const [editingTransaction, setEditingTransaction] = useState<TransactionWithAccountAndCategory | null>(null)
+  const [filteredTransactions, setFilteredTransactions] = useState<TransactionWithAccountAndCategory[]>([])
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const router = useRouter()
@@ -74,7 +79,7 @@ export default function MainPage() {
     loading,
     error: dashboardError,
     refreshData
-  } = useDashboardData(selectedMonth, selectedYear)
+  } = useDashboardData(selectedMonth, selectedYear, selectedAccountId)
 
   const {
     register,
@@ -98,7 +103,7 @@ export default function MainPage() {
     setFilteredTransactions(dashboardData.monthlyTransactions)
   }, [dashboardData.monthlyTransactions])
 
-  const handleOpenDialog = (transaction?: TransactionWithCategory) => {
+  const handleOpenDialog = (transaction?: TransactionWithAccountAndCategory) => {
     if (transaction) {
       setEditingTransaction(transaction)
       setValue('amount', transaction.amount)
@@ -106,6 +111,7 @@ export default function MainPage() {
       setValue('type', transaction.type)
       setValue('date', transaction.date)
       setValue('category_id', transaction.category_id)
+      setValue('account_id', transaction.account_id)
     } else {
       setEditingTransaction(null)
       reset()
@@ -136,6 +142,7 @@ export default function MainPage() {
             type: data.type,
             date: data.date,
             category_id: data.category_id,
+            account_id: data.account_id,
             updated_at: new Date().toISOString(),
           })
           .eq('id', editingTransaction.id)
@@ -156,6 +163,7 @@ export default function MainPage() {
             type: data.type,
             date: data.date,
             category_id: data.category_id,
+            account_id: data.account_id,
             user_id: user!.id,
           })
 
@@ -226,16 +234,122 @@ export default function MainPage() {
         </Typography>
       </Box>
 
-      {/* Filtro Mensal */}
-      <MonthlyFilter
-        selectedMonth={selectedMonth}
-        selectedYear={selectedYear}
-        onMonthChange={setSelectedMonth}
-        onYearChange={setSelectedYear}
-        onRefresh={refreshData}
-        loading={loading}
-        title="Período"
-      />
+      {/* Filtros */}
+      <Paper elevation={1} sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h6" gutterBottom>
+          📅 Filtros
+        </Typography>
+        
+        <Grid container spacing={3} alignItems="center">
+          {/* Filtro de Período */}
+          <Grid item xs={12} lg={8}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+              <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                Período: {dayjs().year(selectedYear).month(selectedMonth - 1).format('MMMM [de] YYYY')}
+              </Typography>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                 <IconButton
+                   onClick={() => {
+                     const currentDate = dayjs().year(selectedYear).month(selectedMonth - 1)
+                     const newDate = currentDate.subtract(1, 'month')
+                     setSelectedMonth(newDate.month() + 1)
+                     setSelectedYear(newDate.year())
+                   }}
+                   size="small"
+                   disabled={loading}
+                 >
+                   <ChevronLeft />
+                 </IconButton>
+
+                <FormControl size="small" sx={{ minWidth: 120 }}>
+                  <InputLabel>Mês</InputLabel>
+                  <Select
+                    value={selectedMonth}
+                    label="Mês"
+                    onChange={(e) => setSelectedMonth(e.target.value as number)}
+                    disabled={loading}
+                  >
+                    {Array.from({ length: 12 }, (_, i) => (
+                      <MenuItem key={i + 1} value={i + 1}>
+                        {dayjs().month(i).format('MMMM')}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl size="small" sx={{ minWidth: 100 }}>
+                  <InputLabel>Ano</InputLabel>
+                  <Select
+                    value={selectedYear}
+                    label="Ano"
+                    onChange={(e) => setSelectedYear(e.target.value as number)}
+                    disabled={loading}
+                  >
+                    {Array.from({ length: 5 }, (_, i) => dayjs().year() - 2 + i).map(year => (
+                      <MenuItem key={year} value={year}>
+                        {year}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                                 <IconButton
+                   onClick={() => {
+                     const currentDate = dayjs().year(selectedYear).month(selectedMonth - 1)
+                     const newDate = currentDate.add(1, 'month')
+                     setSelectedMonth(newDate.month() + 1)
+                     setSelectedYear(newDate.year())
+                   }}
+                   size="small"
+                   disabled={loading}
+                 >
+                   <ChevronRight />
+                 </IconButton>
+
+                 <Button
+                   variant="outlined"
+                   onClick={refreshData}
+                   disabled={loading}
+                   startIcon={loading ? <CircularProgress size={16} /> : <Refresh />}
+                   size="small"
+                 >
+                   {loading ? 'Carregando...' : 'Atualizar'}
+                 </Button>
+              </Box>
+            </Box>
+          </Grid>
+
+          {/* Filtro por Conta */}
+          <Grid item xs={12} lg={4}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+              <AccountSelect
+                value={selectedAccountId}
+                onChange={setSelectedAccountId}
+                label="Filtrar por Conta"
+                showBalance={false}
+              />
+              
+              {selectedAccountId && (
+                <Button
+                  variant="outlined"
+                  onClick={() => setSelectedAccountId(null)}
+                  size="small"
+                >
+                  Limpar
+                </Button>
+              )}
+            </Box>
+          </Grid>
+        </Grid>
+
+        {/* Contador de transações */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            {filteredTransactions.length} transaç{filteredTransactions.length === 1 ? 'ão' : 'ões'} encontrada{filteredTransactions.length === 1 ? '' : 's'}
+          </Typography>
+        </Box>
+      </Paper>
 
       {/* Alertas */}
       {(error || dashboardError) && (
@@ -379,6 +493,7 @@ export default function MainPage() {
                     <TableCell>Data</TableCell>
                     <TableCell>Descrição</TableCell>
                     <TableCell>Categoria</TableCell>
+                    <TableCell>Conta</TableCell>
                     <TableCell>Tipo</TableCell>
                     <TableCell align="right">Valor</TableCell>
                     <TableCell align="center">Ações</TableCell>
@@ -408,6 +523,24 @@ export default function MainPage() {
                             updated_at: '',
                           } : null}
                         />
+                      </TableCell>
+                      <TableCell>
+                        {transaction.account_name ? (
+                          <Chip
+                            icon={transaction.account_type === 'checking' ? <AccountBalanceWallet /> : <Receipt />}
+                            label={transaction.account_name}
+                            size="small"
+                            variant="outlined"
+                            sx={{ 
+                              color: transaction.account_type === 'checking' ? 'primary.main' : 'secondary.main',
+                              borderColor: transaction.account_type === 'checking' ? 'primary.main' : 'secondary.main'
+                            }}
+                          />
+                        ) : (
+                          <Typography variant="caption" color="text.secondary">
+                            Sem conta
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -512,13 +645,21 @@ export default function MainPage() {
               helperText={errors.category_id?.message}
             />
 
+            <AccountSelect
+              value={watch('account_id') || null}
+              onChange={(accountId) => setValue('account_id', accountId)}
+              error={!!errors.account_id}
+              helperText={errors.account_id?.message}
+              required
+            />
+
             <FormControl fullWidth margin="normal" error={!!errors.type}>
               <InputLabel>Tipo</InputLabel>
               <Select
-                {...register('type')}
+                value={watch('type') || ''}
+                onChange={(e) => setValue('type', e.target.value as 'income' | 'expense')}
                 label="Tipo"
                 disabled={isSubmitting}
-                defaultValue=""
               >
                 <MenuItem value="income">Receita</MenuItem>
                 <MenuItem value="expense">Despesa</MenuItem>

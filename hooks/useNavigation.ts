@@ -69,6 +69,11 @@ export const useNavigation = () => {
           badge: badges.transactions > 0 ? badges.transactions : undefined
         },
         {
+          path: '/accounts',
+          label: 'Contas',
+          icon: 'account_balance'
+        },
+        {
           path: '/categories',
           label: 'Categorias',
           icon: 'category',

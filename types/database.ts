@@ -38,6 +38,7 @@ export interface Database {
           id: string
           user_id: string
           category_id: string | null
+          account_id: string | null
           amount: number
           description: string
           type: 'income' | 'expense'
@@ -49,6 +50,7 @@ export interface Database {
           id?: string
           user_id?: string
           category_id?: string | null
+          account_id?: string | null
           amount: number
           description: string
           type: 'income' | 'expense'
@@ -60,10 +62,43 @@ export interface Database {
           id?: string
           user_id?: string
           category_id?: string | null
+          account_id?: string | null
           amount?: number
           description?: string
           type?: 'income' | 'expense'
           date?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      accounts: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          type: 'checking' | 'credit_card'
+          initial_balance: number
+          is_default: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string
+          name: string
+          type: 'checking' | 'credit_card'
+          initial_balance?: number
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          type?: 'checking' | 'credit_card'
+          initial_balance?: number
+          is_default?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -151,6 +186,7 @@ export interface Database {
           id: string
           user_id: string
           category_id: string | null
+          account_id: string | null
           amount: number
           description: string
           type: 'income' | 'expense'
@@ -160,6 +196,41 @@ export interface Database {
           category_name: string | null
           category_color: string | null
           category_icon: string | null
+        }
+      }
+      transactions_with_account_and_category: {
+        Row: {
+          id: string
+          user_id: string
+          category_id: string | null
+          account_id: string | null
+          amount: number
+          description: string
+          type: 'income' | 'expense'
+          date: string
+          created_at: string
+          updated_at: string
+          category_name: string | null
+          category_color: string | null
+          category_icon: string | null
+          account_name: string | null
+          account_type: 'checking' | 'credit_card' | null
+        }
+      }
+      account_balances: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          type: 'checking' | 'credit_card'
+          initial_balance: number
+          is_default: boolean
+          created_at: string
+          updated_at: string
+          current_balance: number
+          total_income: number
+          total_expenses: number
+          transaction_count: number
         }
       }
       budget_statistics: {
@@ -187,6 +258,11 @@ export type Category = Database['public']['Tables']['categories']['Row']
 export type CategoryInsert = Database['public']['Tables']['categories']['Insert']
 export type CategoryUpdate = Database['public']['Tables']['categories']['Update']
 
+// Tipos para contas
+export type Account = Database['public']['Tables']['accounts']['Row']
+export type AccountInsert = Database['public']['Tables']['accounts']['Insert']
+export type AccountUpdate = Database['public']['Tables']['accounts']['Update']
+
 // Tipos para transações (atualizados)
 export type Transaction = Database['public']['Tables']['transactions']['Row']
 export type TransactionInsert = Database['public']['Tables']['transactions']['Insert']
@@ -199,6 +275,8 @@ export type BudgetUpdate = Database['public']['Tables']['budgets']['Update']
 
 // Tipos para views
 export type TransactionWithCategory = Database['public']['Views']['transactions_with_category']['Row']
+export type TransactionWithAccountAndCategory = Database['public']['Views']['transactions_with_account_and_category']['Row']
+export type AccountBalance = Database['public']['Views']['account_balances']['Row']
 export type BudgetStatistics = Database['public']['Views']['budget_statistics']['Row']
 
 // Interfaces complementares
@@ -341,6 +419,7 @@ export const DEFAULT_CATEGORIES = [
 export interface TransactionFilters {
   period: 'week' | 'month' | 'quarter' | 'year' | 'custom'
   categories: string[]
+  accounts: string[]
   types: ('income' | 'expense')[]
   amountRange?: { min: number; max: number }
   searchText?: string
@@ -400,6 +479,35 @@ export interface CSVImportOptions {
   skipDuplicates: boolean
   overwriteDuplicates: boolean
   createMissingCategories: boolean
+}
+
+// Tipos específicos para contas
+export interface AccountFormData {
+  name: string
+  type: 'checking' | 'credit_card'
+  initial_balance: number
+  is_default: boolean
+}
+
+export interface AccountTransferData {
+  from_account_id: string
+  to_account_id: string
+  amount: number
+  description: string
+  date: string
+}
+
+export interface AccountTransferResult {
+  from_transaction_id: string
+  to_transaction_id: string
+  success: boolean
+  error?: string
+}
+
+// Tipos para dashboard com filtros de conta
+export interface DashboardDataWithAccounts extends DashboardData {
+  accountsData: AccountBalance[]
+  selectedAccountId?: string | null
 }
 
 // Formato esperado do CSV

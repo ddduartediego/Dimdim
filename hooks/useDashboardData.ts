@@ -3,14 +3,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { TransactionWithCategory } from '@/types/database'
+import { TransactionWithAccountAndCategory } from '@/types/database'
 import dayjs from 'dayjs'
 
 interface DashboardData {
   totalIncome: number
   totalExpenses: number
   balance: number
-  monthlyTransactions: TransactionWithCategory[]
+  monthlyTransactions: TransactionWithAccountAndCategory[]
   transactionCount: number
 }
 
@@ -21,7 +21,7 @@ interface UseDashboardDataReturn {
   refreshData: () => Promise<void>
 }
 
-export function useDashboardData(month: number, year: number): UseDashboardDataReturn {
+export function useDashboardData(month: number, year: number, accountId?: string | null): UseDashboardDataReturn {
   const { user } = useAuth()
   const [data, setData] = useState<DashboardData>({
     totalIncome: 0,
@@ -44,14 +44,21 @@ export function useDashboardData(month: number, year: number): UseDashboardDataR
       const startDate = dayjs(`${year}-${month}-01`).format('YYYY-MM-DD')
       const endDate = dayjs(`${year}-${month}-01`).endOf('month').format('YYYY-MM-DD')
 
-      // Buscar transações do período com informações de categoria
-      const { data: transactions, error: transactionsError } = await supabase
-        .from('transactions_with_category')
+      // Buscar transações do período com informações de categoria e conta
+      let query = supabase
+        .from('transactions_with_account_and_category')
         .select('*')
         .eq('user_id', user.id)
         .gte('date', startDate)
         .lte('date', endDate)
         .order('date', { ascending: false })
+
+      // Filtrar por conta se especificado
+      if (accountId) {
+        query = query.eq('account_id', accountId)
+      }
+
+      const { data: transactions, error: transactionsError } = await query
 
       if (transactionsError) {
         console.error('Erro ao buscar transações:', transactionsError)
@@ -85,7 +92,7 @@ export function useDashboardData(month: number, year: number): UseDashboardDataR
     } finally {
       setLoading(false)
     }
-  }, [user, month, year])
+  }, [user, month, year, accountId])
 
   useEffect(() => {
     refreshData()
